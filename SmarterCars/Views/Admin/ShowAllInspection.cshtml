@@ -1,0 +1,83 @@
+﻿@model IEnumerable<SmarterCars.Models.CustomerSchedule>
+
+@{
+	ViewData["Title"] = "View";
+}
+
+
+@if (Model.Count() > 0)
+{
+	<table class="table">
+		<thead>
+			<tr>
+				<th>
+					User Email
+				</th>
+				<th>
+					User Phone number
+				</th>
+				<th>
+					Inspection Date
+				</th>
+				<th>
+					Inspection Status
+				</th>
+				<th>
+					Car to inspect
+				</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var schedule in Model)
+			{
+				<tr>
+					<td>
+						@schedule.UserWhoScheduled.Email
+					</td>
+					<td>
+						@schedule.UserWhoScheduled.PhoneNumber
+					</td>
+					<td>
+						<date>@schedule.ScheduledTime.ToString("dd/mm/yyyy hh:mm")</date>
+					</td>
+					<td>
+						@{
+							var state = "";
+							switch (schedule.State)
+							{
+								case SmarterCars.Enums.InspectionState.Canceled:
+									state = "Canceled";
+									break;
+								case SmarterCars.Enums.InspectionState.Inspected:
+									state = "Inspected";
+									break;
+								case SmarterCars.Enums.InspectionState.WillInspect:
+									state = "Will Inspect";
+									break;
+
+							}
+						}
+
+						<span class="@state">@state</span>
+					</td>
+					<td>
+						@schedule.Car.ModelNumber
+					</td>
+					<td>
+						@if (state == "Will Inspect")
+						{
+						<form asp-action="ConfirmInspection" asp-route-id="@schedule.CustomerScheduleId">
+							<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+							<input type="submit" class="btn btn-info" value="Confirm Inspection" /> <span>|</span>
+						</form>
+							
+						}
+
+						@Html.ActionLink("Delete Inspection", "Delete", "CustomerSchedules", new { id = schedule.CustomerScheduleId })
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}

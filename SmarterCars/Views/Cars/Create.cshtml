@@ -1,0 +1,141 @@
+﻿@model SmarterCars.DTOs.CarDto
+@{
+	ViewData["Title"] = "Home Page";
+}
+
+<div class="row">
+	<div class="col-md-12">
+		<form class="row" asp-area="" asp-action="Create" asp-controller="Cars" enctype="multipart/form-data">
+			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+			<div class="col-md-6">
+				<fieldset>
+					<legend>Car Information</legend>
+					<div class="form-group">
+						<label asp-for="ModelNumber" class="control-label"></label>
+						<input asp-for="ModelNumber" class="form-control" />
+						<span asp-validation-for="ModelNumber" class="text-danger"></span>
+					</div>
+					<div class="form-group">
+						<div class="checkbox">
+							<label>
+								<input asp-for="Available" /> @Html.DisplayNameFor(model => model.Available)
+							</label>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="checkbox">
+							<label>
+								<input asp-for="HasDefect" /> @Html.DisplayNameFor(model => model.HasDefect)
+							</label>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label asp-for="DefectDescription" class="control-label"></label>
+						<input asp-for="DefectDescription" class="form-control" />
+						<span asp-validation-for="DefectDescription" class="text-danger"></span>
+					</div>
+					<div class="form-group">
+						<label asp-for="Amount" class="control-label"></label>
+						<input asp-for="Amount" class="form-control" />
+						<span asp-validation-for="Amount" class="text-danger"></span>
+					</div>
+				</fieldset>
+			</div>
+			
+			
+			<div class="col-md-6">
+				<div class="col-md-12">
+					<fieldset class="color-area">
+						<legend>Add different Car Color</legend>
+						<div class="form-group">
+							<label asp-for="Colors" class="control-label"></label>
+							<input asp-for="Colors" class="form-control" />
+							<span asp-validation-for="Colors" class="text-danger"></span>
+						</div>
+					</fieldset>
+					<input type="button" onclick="addMoreColors()" class="btn btn-sm" value="Add another Color" />
+
+				</div>
+				<div class="col-md-12">
+					<div class="row">
+						<div class="col-md-12">
+							<fieldset>
+								<legend>Add different images for car</legend>
+								<div class="form-group">
+									<label asp-for="CarImages" class="control-label"></label>
+									<input asp-for="CarImages" class="form-control" />
+									<span asp-validation-for="CarImages" class="text-danger"></span>
+								</div>
+								<div class="form-group">
+									<label asp-for="Descriptions" class="control-label"></label>
+									<input asp-for="Descriptions" class="form-control" />
+									<span asp-validation-for="Descriptions" class="text-danger"></span>
+								</div>
+								<div class="form-group">
+									<label asp-for="Views" class="control-label"></label>
+									<input asp-for="Views" class="form-control" />
+									<span asp-validation-for="Views" class="text-danger"></span>
+								</div>
+							</fieldset>
+							<div class="new-image-element">
+
+							</div>
+							<input type="button" onclick="addMoreImages(this)" class="btn btn-secondary" value="Add another Image" />
+						</div>
+					</div>
+					
+				</div>
+				
+			</div>
+			
+			
+			<div class="form-group">
+				<input type="submit" value="Create" class="btn btn-default" />
+			</div>
+		</form>
+		
+	</div>
+</div>
+
+@section Scripts { 
+	<script>
+		
+		function addMoreImages(elem) {
+			const thisImage = elem;
+			const thisImageParent = thisImage.parentElement;
+
+			let firstDiv = createElement('div', 'form-group');
+			let carLabel = createElement('label', 'control-label', null, null, 'CarImages');
+			let carInput = createElement('input', 'form-control', 'CarImages', 'file');
+			firstDiv.appendChild(carLabel);
+			firstDiv.appendChild(carInput);
+
+			let secondDiv = createElement('div', 'form-group');
+			let DescriptionLabel = createElement('label', 'control-label', null, null, innerTEXT = 'Descriptions');
+			let DescriptionInput = createElement('input', 'form-control', 'Descriptions', 'text');
+			secondDiv.appendChild(DescriptionLabel);
+			secondDiv.appendChild(DescriptionInput);
+
+			let thirdDiv = createElement('div', 'form-group');
+			let ViewLabel = createElement('label', 'control-label', null, null, innerTEXT = 'Views');
+			let ViewInput = createElement('input', 'form-control', 'Views', 'text');
+			thirdDiv.appendChild(ViewLabel);
+			thirdDiv.appendChild(ViewInput);
+
+			let deleteButton = createElement('input', 'btn btn-danger', null, 'button');
+			deleteButton.setAttribute('value', 'Delete this section');
+			deleteButton.setAttribute('onclick', 'removeThisSection(this)');
+
+			let encompassing = createElement('fieldset', 'added-field-set');
+			encompassing.appendChild(firstDiv);
+			encompassing.appendChild(secondDiv);
+			encompassing.appendChild(thirdDiv);
+			encompassing.appendChild(deleteButton);
+
+			const innerFieldSet = thisImageParent.getElementsByClassName('new-image-element')[0];
+			innerFieldSet.appendChild(encompassing);
+						
+		}
+	</script>
+}

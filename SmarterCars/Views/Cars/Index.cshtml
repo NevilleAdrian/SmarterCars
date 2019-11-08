@@ -1,0 +1,24 @@
+﻿@model List<SmarterCars.ViewModels.CarViewModel>
+@using SmarterCars.ViewModels
+
+@{
+	ViewData["Title"] = "Index";
+}
+
+
+@if (Model.Count > 0)
+{
+	<h2>All available cars</h2>
+	@foreach (CarViewModel car in Model)
+	{
+		<div class="beautiful-border">
+			<span class="align-content-center">@car.ModelNumber</span>
+			<span class="float-right">
+				<a asp-action="Edit" class="btn btn-info" asp-route-id="@car.CarId">Edit</a>
+				<a asp-action="Delete" class="btn btn-danger" asp-route-id="@car.CarId">Delete</a>
+			</span>
+		</div>
+	}
+
+}
+<a asp-action="Create" class="btn btn-outline-primary">Add Car</a>

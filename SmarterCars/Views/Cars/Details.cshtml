@@ -1,0 +1,18 @@
+﻿@model SmarterCars.ViewModels.EditCarViewModel
+@using SmarterCars.ViewModels
+
+@{
+	ViewData["Title"] = "Details";
+}
+
+<h2>@Model.ModelNumber</h2>
+<h3>Available colours include: </h3>
+@foreach (Color color in Model.Colors)
+{
+	<p>@color.ColorName</p>
+}
+@foreach (CarImageViewModel car in Model.CarImages)
+{
+	<img src="~/@car.CarImagePath" alt="@car.View" class="card-img-top"/>
+	<p>@car.Description <span>@car.View</span></p>
+}

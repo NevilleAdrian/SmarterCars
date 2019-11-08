@@ -1,0 +1,386 @@
+﻿@model SmarterCars.ViewModels.EditCarViewModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+@*<h1>Edit</h1>
+
+<h4>CarViewModel</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="ModelNumber" class="control-label"></label>
+                <input asp-for="ModelNumber" class="form-control" />
+                <span asp-validation-for="ModelNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="Available" /> @Html.DisplayNameFor(model => model.Available)
+                </label>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="HasDefect" /> @Html.DisplayNameFor(model => model.HasDefect)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="DefectDescription" class="control-label"></label>
+                <input asp-for="DefectDescription" class="form-control" />
+                <span asp-validation-for="DefectDescription" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Amount" class="control-label"></label>
+                <input asp-for="Amount" class="form-control" />
+                <span asp-validation-for="Amount" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="InspectionInProgress" /> @Html.DisplayNameFor(model => model.InspectionInProgress)
+                </label>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>*@
+
+<div class="row">
+	<div class="col-md-12">
+		<form class="row" asp-area="" asp-action="Edit" asp-controller="Cars" asp-route-id="@Model.CarId">
+			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+			<div class="col-md-6">
+				<fieldset>
+					<legend>Car Information</legend>
+					<div class="form-group">
+						<label asp-for="ModelNumber" class="control-label"></label>
+						<input asp-for="ModelNumber" class="form-control" />
+						<span asp-validation-for="ModelNumber" class="text-danger"></span>
+					</div>
+					<div class="form-group">
+						<div class="checkbox">
+							<label>
+								<input asp-for="Available" /> @Html.DisplayNameFor(model => model.Available)
+							</label>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="checkbox">
+							<label>
+								<input asp-for="HasDefect" /> @Html.DisplayNameFor(model => model.HasDefect)
+							</label>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label asp-for="DefectDescription" class="control-label"></label>
+						<input asp-for="DefectDescription" class="form-control" />
+						<span asp-validation-for="DefectDescription" class="text-danger"></span>
+					</div>
+					<div class="form-group">
+						<label asp-for="Amount" class="control-label"></label>
+						<input asp-for="Amount" class="form-control" />
+						<span asp-validation-for="Amount" class="text-danger"></span>
+					</div>
+				</fieldset>
+			</div>
+
+
+			<div class="col-md-6">
+				<div class="col-md-12">
+					<fieldset class="color-area">
+						<legend>Add different Car Color</legend>
+						@foreach (Color color in Model.Colors)
+						{
+							<div class="form-group">
+								<input type="hidden" name="ColorIds" value="@color.ColorId" />
+								<input type="hidden" name="OriginalColorNames" value="@color.ColorName" />
+								<label asp-for="Colors" class="control-label"></label>
+								<input type="text" name="NewColors" value="@color.ColorName" class="form-control" />
+								
+							</div>
+						}
+
+					</fieldset>
+					<input type="button" onclick="addMoreColors()" class="btn btn-sm" value="Add another Color" />
+
+				</div>
+				<div class="col-md-12">
+					<fieldset>
+						<legend>Add different images for car</legend>
+
+						@foreach (var image in Model.CarImages)
+						{
+							<div class="form-group">
+								<input class="editable" type="hidden" name="CarImageId" value="@image.CarImageId" />
+								<input class="editable" type="hidden" name="ImageToRemove" value="@image.CarImagePath" />
+								<div class="fileInput">
+
+								</div>
+								<img src="~/@image.CarImagePath" class="img-thumbnail" />
+								<input type="text" class="editable form-control" name="Description" value="@image.Description" />
+								<input type="text" class="editable form-control" name="View" value="@image.View" />
+
+								<input type="button" onclick="editImage(this)" class="main-button btn btn-default" value="Edit" />
+								<input type="button" onclick="deleteThisRecord(this)" class="main-button btn btn-danger" value="Delete" />
+
+								<input type="button" onclick="doneEditing(this)" class="editing btn btn-success" value="Done" />
+								<input type="button" onclick="cancelEditing(this)" class="editing btn btn-outline-warning" value="Cancel" />
+
+
+							</div>
+						}
+						<div class="new-image-element">
+
+						</div>
+						<div class="add-new-images">
+
+						</div>
+						<input type="button" onclick="addMoreImagesOnEdit(this)" class="btn btn-secondary" value="Add another Image" />
+
+					</fieldset>
+				</div>
+
+			</div>
+
+
+			<div class="form-group">
+				<input type="submit" value="Edit" class="btn btn-default" />
+			</div>
+		</form>
+
+	</div>
+</div>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+	<script>
+		function editImage(elem) {
+			const thisImage = elem;
+			const thisImageParent = thisImage.parentElement;
+			let hideableElement = thisImageParent.getElementsByTagName("img")[0];
+
+			//hide image element
+			hideableElement.style.display = "none"
+
+			//show file input
+			let thisFileInput = thisImageParent.getElementsByClassName("fileInput")[0];
+			thisFileInput.innerHTML = "<input name='File' type='file' class='editable form-control' />"
+
+			let hideButtons = thisImageParent.getElementsByClassName("main-button");
+
+			for (let i = 0; i < hideButtons.length; i++) {
+				hideButtons[i].style.display = "none";
+			}
+
+			let showButtons = thisImageParent.getElementsByClassName("editing");
+
+			for (let i = 0; i < showButtons.length; i++) {
+				showButtons[i].style.display = "inline";
+			}
+		}
+
+		function doneEditing(elem) {
+			const thisImage = elem;
+			const thisImageParent = thisImage.parentElement;
+			let hideableElement = thisImageParent.getElementsByTagName("img")[0];
+
+			//hide image element
+			hideableElement.style.display = "none"
+
+			//show file input
+			let thisFileInput = thisImageParent.getElementsByClassName("fileInput")[0];
+			
+			const parentsChild = thisImageParent.getElementsByClassName("editable");
+			var postBody = new FormData();
+			//var postBody = {};
+
+			for (let i = 0; i < parentsChild.length; i++) {
+				if (parentsChild[i].name == "File") {
+					postBody.append(parentsChild[i].name, parentsChild[i].files[0]);
+				}
+				else {
+					postBody.append(parentsChild[i].name, parentsChild[i].value);
+				//postBody[parentsChild[i].name] = parentsChild[i].value
+				}
+				
+			}
+			$.ajax({
+				type: 'POST',
+				url: '@Url.Action("EditcarImage")',
+				data: postBody,
+				contentType: false,
+				processData: false,
+				beforeSend: function () {
+					thisImage.value += "  ...Loading";
+				},
+				success: function (result) {
+					if (result.path != "") {
+						parentsChild[1].value = result.path;
+						hideableElement.src = `../../${result.path}`;
+						hideableElement.style.display = "block";
+					}
+					cancelEditing(elem);
+				},
+				complete: function () {
+					thisImage.value = "Done";
+				},
+			})
+		}
+
+		function cancelEditing(elem) {
+			const thisImage = elem;
+			const thisImageParent = thisImage.parentElement;
+			let hideableElement = thisImageParent.getElementsByTagName("img")[0];
+
+			//hide image element
+			hideableElement.style.display = "block"
+
+			//show file input
+			let thisFileInput = thisImageParent.getElementsByClassName("fileInput")[0];
+			thisFileInput.innerHTML = "";
+
+			let hideButtons = thisImageParent.getElementsByClassName("editing");
+
+			for (let i = 0; i < hideButtons.length; i++) {
+				hideButtons[i].style.display = "none";
+			}
+
+			let showButtons = thisImageParent.getElementsByClassName("main-button");
+
+			for (let i = 0; i < showButtons.length; i++) {
+				showButtons[i].style.display = "inline";
+			}
+		}
+
+		function deleteThisRecord(elem) {
+			const thisImage = elem;
+			const thisImageParent = thisImage.parentElement;
+
+			const parentsChild = thisImageParent.getElementsByClassName("editable");
+			var postBody = new FormData();
+			
+			for (let i = 0; i < parentsChild.length; i++) {
+				console.log(parentsChild[i].name);
+				postBody.append(parentsChild[i].name, parentsChild[i].value);
+				//postBody[parentsChild[i].name] = parentsChild[i].value
+			}
+			postBody.append("File", null);
+			const verify = document.getElementsByName('__RequestVerificationToken')[0];
+			postBody.append("__RequestVerificationToken", verify.value);
+
+			$.ajax({
+				type: 'POST',
+				url: '@Url.Action("DeleteCarImage")',
+				data: postBody,
+				contentType: false,
+				processData: false,
+				beforeSend: function () {
+					thisImage.value = "  ...Deleting";
+				},
+				success: function (result) {
+					if (result.path != "") {
+						thisImageParent.innerHTML = `<span class='btn btn-primary'>${result.value}<span>`
+					}
+					
+				}
+			});
+		}
+
+		function addMoreImagesOnEdit(elem) {
+			const thisImage = elem;
+			const thisImageParent = thisImage.parentElement;
+
+			let firstDiv = createElement('div', 'form-group');
+			let carLabel = createElement('label', 'control-label', null, null, 'CarImages');
+			let carInput = createElement('input', 'editable form-control', 'File', 'file');
+			firstDiv.appendChild(carLabel);
+			firstDiv.appendChild(carInput);
+
+			let secondDiv = createElement('div', 'form-group');
+			let DescriptionLabel = createElement('label', 'control-label', null, null, innerTEXT = 'Descriptions');
+			let DescriptionInput = createElement('input', 'editable form-control', 'Description', 'text');
+			secondDiv.appendChild(DescriptionLabel);
+			secondDiv.appendChild(DescriptionInput);
+
+			let thirdDiv = createElement('div', 'form-group');
+			let ViewLabel = createElement('label', 'control-label', null, null, innerTEXT = 'Views');
+			let ViewInput = createElement('input', 'editable form-control', 'View', 'text');
+		
+
+			thirdDiv.appendChild(ViewLabel);
+			thirdDiv.appendChild(ViewInput);
+
+			let deleteButton = createElement('input', 'btn btn-danger', null, 'button');
+			deleteButton.setAttribute('value', 'Delete this section');
+			deleteButton.setAttribute('onclick', 'removeThisSection(this)');
+
+			let addImage = createElement('input', 'add-button btn btn-warning', null, 'button');
+			addImage.setAttribute('value', 'Add this Image');
+			addImage.setAttribute('onclick', 'addThisImageOnEdit(this)');
+
+			let hiddenId = createElement('input', 'editable', 'CarId', 'hidden');
+			hiddenId.setAttribute('value', @Model.CarId);
+			
+
+			let encompassing = createElement('fieldset', 'added-field-set');
+			encompassing.appendChild(hiddenId);
+			encompassing.appendChild(firstDiv);
+			encompassing.appendChild(secondDiv);
+			encompassing.appendChild(thirdDiv);
+			encompassing.appendChild(addImage);
+			encompassing.appendChild(deleteButton);
+
+
+			const innerFieldSet = thisImageParent.getElementsByClassName('new-image-element')[0];
+			innerFieldSet.appendChild(encompassing);
+
+		}
+
+		function addThisImageOnEdit(elem) {
+			const thisImage = elem;
+			const thisImageParent = thisImage.parentElement;
+
+			
+			const parentsChild = thisImageParent.getElementsByClassName("editable");
+			const thisButton = thisImageParent.getElementsByClassName("add-button")[0];
+			var postBody = new FormData();
+			//var postBody = {};
+
+			for (let i = 0; i < parentsChild.length; i++) {
+				if (parentsChild[i].name == "File") {
+					postBody.append(parentsChild[i].name, parentsChild[i].files[0]);
+				}
+				else {
+					postBody.append(parentsChild[i].name, parentsChild[i].value);
+					//postBody[parentsChild[i].name] = parentsChild[i].value
+				}
+
+			}
+			const verify = document.getElementsByName('__RequestVerificationToken')[0];
+			postBody.append("__RequestVerificationToken", verify.value);
+			$.ajax({
+				type: 'POST',
+				url: '@Url.Action("CarImageToAdd")',
+				data: postBody,
+				contentType: false,
+				processData: false,
+				beforeSend: function () {
+					thisButton.value += "  ...Adding";
+				},
+				success: function (result) {
+
+					thisImageParent.innerHTML = `<span class='btn btn-success'>${result.value}</span>`
+					
+				}
+			});
+		}
+	</script>
+}

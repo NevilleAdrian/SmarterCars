@@ -1,0 +1,64 @@
+﻿@model List<SmarterCars.ViewModels.EmitContentViewModel>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+               Content Id
+            </th>
+            <th>
+                Title
+            </th>
+            <th>
+				Short Dscription
+            </th>
+            <th>
+                Image
+            </th>
+            <th>
+                Date Posted
+            </th>
+            <th>
+                Category Name
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ContentId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Title)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ShortDescription)
+            </td>
+            <td>
+                <img src="~/@item.ImagePath" class="img-thumbnail w-50"/>
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DatePosted)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Category.CategoryName)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.ContentId }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.ContentId })
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

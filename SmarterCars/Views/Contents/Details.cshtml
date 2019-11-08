@@ -1,0 +1,337 @@
+﻿@model SmarterCars.ViewModels.ContentPageViewModel
+
+@using Microsoft.AspNetCore.Identity
+
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@{
+	ViewData["Title"] = Model.Content.Title;
+	string userId = null;
+	if (SignInManager.IsSignedIn(User))
+	{ userId = UserManager.GetUserId(User); }
+}
+
+<div class="row">
+	<div class="col-md-6">
+		@if (Model.Content != null)
+		{
+		<div class="row">
+			<div class="col-md-3">
+				<img src="~/@Model.Content.ImagePath" alt="@Model.Content.Title" class="card-img-overlay w-100" />
+			</div>
+			<div class="col-md-9">
+				<h2 class="col-md-12">@Model.Content.Title</h2>
+				<div class="col-md-12">
+					<p>Date Posted: @Model.Content.DatePosted.ToString() No of Comments: @Model.Content.Comments.Count().ToString()</p>
+					@Html.Raw(Model.Content.LongDescription)
+					@if (Model.Content.Comments.Count > 0)
+					{
+						@foreach (Comment comment in Model.Content.Comments.Take(5))
+						{
+							if (comment.ShouldPublish)
+							{
+								<div class="border form-group">
+									<p class="col-md-12">@comment.ApplicationUser.Email</p>
+									<p class="col-md-12">@comment.Message</p>
+									<date class="col-md-12">@comment.DateAdded</date>
+								</div>
+							}
+
+
+						}
+					}
+					@Html.AntiForgeryToken()
+					<form>
+						<div class="form-group">
+							<input class="commentable" type="hidden" name="ContentId" value="@Model.Content.ContentId" />
+							<input class="commentable" type="hidden" name="UserId" value="@userId" />
+							<label for="Comment" class="form-check-label">Add your comment</label>
+							<textarea name="Message" class="commentable form-control-file border mb-1"></textarea>
+							@if (SignInManager.IsSignedIn(User))
+							{
+
+								<input type="button" onclick="sendComment(this)" class="btn btn-default" value="Post Message" />
+
+							}
+							else
+							{
+								<a class="btn btn-info" asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@Url.Action("Details", "Contents", new { id = Model.Content.ContentId})">Post Message</a>
+							}
+						</div>
+
+					</form>
+				</div>
+			</div>
+		</div>
+
+		}
+	</div>
+	<div class="col-md-6">
+		@if (Model.CarViews != null && Model.CarViews.Count() > 0)
+		{
+			@foreach (var item in Model.CarViews.Take(5))
+			{
+				<div class="col-md-12">
+					<p>@item.ModelNumber</p>
+
+					@if (item.CarImages != null && item.CarImages.Count() > 0)
+					{
+						@if (item.CarImages.Count() == 1)
+						{
+							<div class="col-md-12">
+								<figure>
+									<img src="~/@item.CarImages.FirstOrDefault().CarImagePath" class="fixed-height-car-image w-100 img-fluid" alt="@item.CarImages.FirstOrDefault().View" />
+									<figcaption>
+										<h4>@item.CarImages.FirstOrDefault().Description</h4>
+										<h5>@item.CarImages.FirstOrDefault().View</h5>
+									</figcaption>
+								</figure>
+							</div>
+						}
+						else
+						{
+							<div id="carouselImages" class="carousel slide" data-ride="carousel">
+								<div class="carousel-inner">
+									@foreach (var image in item.CarImages)
+									{
+										<div class="carousel-item @(item.CarImages.IndexOf(image) == 0 ? "active": "") ">
+											<div class="dark-overlay"></div>
+											<img class="fixed-height-car-image w-100 img-fluid" src="~/@image.CarImagePath" alt="@image.View" />
+											<div class="carousel-caption d-none d-md-block">
+												<h4>@image.Description</h4>
+												<h5>@image.View</h5>
+											</div>
+										</div>
+									}
+								</div>
+							</div>
+						}
+
+					}
+					<div class="appointment-area">
+					</div>
+					@if (SignInManager.IsSignedIn(User))
+					{
+						@if (item.CustomerScheduleDtos != null)
+						{
+							var uD = item.CustomerScheduleDtos.Where(cS => cS.UserId == userId && cS.State == SmarterCars.Enums.InspectionState.WillInspect).SingleOrDefault();
+
+							@if (uD != null)
+							{
+								<div class="col-md-12 announcer-of-appointment">
+									<span class="btn btn-outline-info">You already booked an inspection for @uD.ScheduledTime.ToLongDateString() at @uD.ScheduledTime.ToLongTimeString()</span>
+									<div class="form-group">
+										<a class="btn btn-info" asp-route-id="@uD.CustomerScheduleId" asp-action="Edit" asp-controller="CustomerSchedules">Edit your inspection</a>
+										<button class="btn btn-danger" onclick="cancelInspection(this, @uD.CustomerScheduleId)">Cancel your inspection</button>
+									</div>
+								</div>
+
+							}
+							else
+							{
+								<button class="booker btn btn-dark" onclick="showBooking(this, @item.CarId)">Schedule Inspection</button>
+
+							}
+						}
+
+					}
+					else
+					{
+						<button class="booker btn btn-dark" onclick="showBooking(this, @item.CarId)">Schedule Inspection</button>
+
+					}
+				</div>
+			}
+
+		}
+
+	</div>
+</div>
+
+
+@section Scripts{
+	<script>
+		function showBooking(elem, id) {
+			let thisButton = elem;
+			let bookingArea = thisButton.previousElementSibling;
+
+			let container = createElement('div', 'remove', null, null, null);
+
+
+
+			let appUser = '@(userId != null ? userId: "")';
+
+			let dateArea = createElement('input', 'bookable form-control', 'ScheduledTime', 'datetime-local', null);
+
+			let appUserInput = createElement('input', 'bookable form-control', 'UserId', 'hidden', null);
+			appUserInput.setAttribute('value', appUser);
+
+			let carInput = createElement('input', 'bookable form-control', 'CarId', 'hidden', null);
+			carInput.setAttribute('value', id);
+
+			let booking = createElement('input', 'btn btn-default', null, 'button');
+			booking.setAttribute('value', "Book Inspection");
+			booking.setAttribute('onclick', "bookThisInspection(this)");
+
+			let close = createElement('input', 'btn btn-danger', null, 'button');
+			close.setAttribute('value', "Close");
+			close.setAttribute('onclick', "closeThisInspection(this)");
+
+			container.appendChild(dateArea);
+			container.appendChild(appUserInput);
+			container.appendChild(carInput);
+			container.appendChild(booking);
+			container.appendChild(close);
+
+			bookingArea.appendChild(container);
+
+			thisButton.style.display = "none"
+		}
+
+		function closeThisInspection(elem) {
+			let container = elem.parentElement;
+			let parentConatainer = container.parentElement;
+			let booker = parentConatainer.nextElementSibling;
+			booker.style.display = "block";
+			parentConatainer.removeChild(container);
+		}
+
+		function bookThisInspection(elem) {
+			const thisImage = elem;
+			const thisImageParent = thisImage.parentElement;
+
+			const parentsChild = thisImageParent.getElementsByClassName("bookable");
+
+
+			var postBody = new FormData();
+			//var postBody = {};
+
+			for (let i = 0; i < parentsChild.length; i++) {
+
+				postBody.append(parentsChild[i].name, parentsChild[i].value);
+			}
+			const verify = document.getElementsByName('__RequestVerificationToken')[0];
+			postBody.append("__RequestVerificationToken", verify.value);
+			$.ajax({
+				type: 'POST',
+				url: '@Url.Action("CreateSchedule", "CustomerSchedules")',
+				data: postBody,
+				contentType: false,
+				processData: false,
+				beforeSend: function () {
+					thisImage.value += "  ...Loading";
+				},
+				success: function (result) {
+					if (result.value != null) {
+						thisImageParent.innerHTML = `<span class='btn btn-success'>${result.value}</span>`;
+					}
+					else {
+						swal({
+							icon: "error",
+							title: "There was an error with your request. Please select a date and/or time",
+
+						});
+						closeThisInspection(elem);
+					}
+
+				},
+				error: function (result) {
+					swal({
+						icon: "error",
+						title: "Please login and try again",
+
+					});
+					closeThisInspection(elem)
+				}
+
+			})
+		}
+
+		function sendComment(elem) {
+			let thisParent = elem.parentElement;
+			let interest = thisParent.getElementsByClassName('commentable');
+
+			var postBody = new FormData();
+			//var postBody = {};
+
+			for (let i = 0; i < interest.length; i++) {
+
+				postBody.append(interest[i].name, interest[i].value);
+			}
+			const verify = document.getElementsByName('__RequestVerificationToken')[0];
+			postBody.append("__RequestVerificationToken", verify.value);
+
+			console.log(postBody);
+			$.ajax({
+				type: 'POST',
+				url: '@Url.Action("CreateComment", "Comments")',
+				data: postBody,
+				contentType: false,
+				processData: false,
+				success: function (result) {
+					if (result.value === "Success") {
+						thisParent.innerHTML = `<span class='btn btn-success'>Message Sent</span>`;
+					}
+					else {
+						swal({
+							icon: "error",
+							title: "An error occured. Try again"
+						})
+						
+					}
+
+				},
+				error: function (result) {
+					swal({
+						icon: "error",
+						title: "Please login and try again",
+
+					});
+				}
+
+			});
+		}
+
+		function cancelInspection(elem, id) {
+			swal({
+				title: "Canceling?",
+				text: "Are you sure you want to cancel?",
+				icon: "warning",
+				buttons: true
+			}).then((value) => {
+				if (value != null) {
+					let dummyElem = document.createElement('div');
+					dummyElem.innerHTML = '@Html.AntiForgeryToken()';
+					let token = dummyElem.firstChild.value;
+					let data = new FormData();
+					data.append('Id', id);
+					data.append('__RequestVerificationToken', token);
+					console.log(token)
+					$.ajax({
+						type: 'POST',
+						url: '@Url.Action("CancelSchedule", "CustomerSchedules")',
+						data: data,
+						contentType: false,
+						processData: false,
+						success: function (result) {
+							let thisInspection = elem.parentElement.parentElement;
+							thisInspection.innerHTML = '<span class="btn btn-default">Inspection Canceled</span>';
+							swal({
+								text: result.value,
+								icon: "success"
+							})
+						},
+						error: function () {
+							swal.stopLoading();
+							swal.close();
+						}
+
+					});
+				}
+
+			});
+		}
+	</script>
+}
+
