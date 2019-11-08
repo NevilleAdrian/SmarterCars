@@ -1,1 +1,1 @@
-Run applicagion with Dotnet Run
+Run application with Dotnet Run
